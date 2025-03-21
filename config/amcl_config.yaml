@@ -1,0 +1,71 @@
+amcl:
+  ros__parameters:
+    # Motion model parameters, which affect how the robot's movement is estimated.
+    alpha1: 0.2  # Noise in rotation while rotating
+    alpha2: 0.2  # Noise in translation while rotating
+    alpha3: 0.2  # Noise in translation while translating
+    alpha4: 0.2  # Noise in rotation while translating
+    alpha5: 0.2  # Noise in the free-space translation component (e.g., sliding)
+
+    # Frame IDs used by AMCL. Ensure these match your robot's TF frames.
+    base_frame_id: "base_link"  # Typically the robot's main body frame
+    odom_frame_id: "odom"       # The frame attached to the odometry system
+    global_frame_id: "map"      # The fixed frame for localization (typically "map")
+
+    # Laser model parameters
+    laser_model_type: "likelihood_field"  # Laser model: likelihood_field, beam, likelihood_field_prob
+    laser_max_range: 100.0                # Maximum range of the laser scanner
+    laser_min_range: 0.1                  # Minimum range of the laser scanner
+    laser_likelihood_max_dist: 2.0        # Distance beyond which the likelihood is calculated as zero
+    max_beams: 60                         # Number of beams to use in each scan
+    
+    # Beam skipping parameters
+    do_beamskip: true                     # Enable beam skipping (useful for noisy sensors)
+    beam_skip_distance: 0.5               # Distance beyond which a beam is considered outlier
+    beam_skip_error_threshold: 0.9        # Error threshold to consider skipping a beam
+    beam_skip_threshold: 0.3              # Proportion of beams that need to be skipped before triggering a resample
+    
+    # Particle filter parameters
+    min_particles: 500                    # Minimum number of particles
+    max_particles: 2000                   # Maximum number of particles
+    pf_err: 0.05                          # Error threshold for the particle filter
+    pf_z: 0.99                            # Convergence threshold for the particle filter
+
+    # Recovery parameters
+    recovery_alpha_fast: 0.0              # Fast recovery rate
+    recovery_alpha_slow: 0.0              # Slow recovery rate
+    
+    # Resampling and pose update parameters
+    resample_interval: 1                  # Number of updates before resampling
+    update_min_a: 0.2                     # Minimum angular displacement before an update
+    update_min_d: 0.25                    # Minimum linear displacement before an update
+    
+    # Model type and settings
+    robot_model_type: "nav2_amcl::DifferentialMotionModel"  # Type of motion model (for a differential drive robot)
+    
+    # Pose estimation parameters
+    z_hit: 0.5                            # Weight of the "hit" (correct detection) component
+    z_short: 0.05                         # Weight of the short reading component (unexpected obstacles)
+    z_max: 0.05                           # Weight of the max reading component (unobserved area)
+    z_rand: 0.5                           # Weight of the random measurement component
+    sigma_hit: 0.2                        # Standard deviation for the hit model
+    lambda_short: 0.1                     # Exponential decay parameter for short readings
+
+    # Transformation tolerance and map usage
+    tf_broadcast: true                    # Whether to broadcast the TF between map and odom
+    transform_tolerance: 1.0              # Maximum allowable delay for transform data
+    use_map_topic: false                  # If true, subscribe to the /map topic instead of requesting the map via service
+    
+    # Initial pose settings (optional)
+    initial_pose:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+      yaw: 0.0
+
+    set_initial_pose: false               # If true, set the initial pose to the above values on startup
+    always_reset_initial_pose: false      # If true, always reset to initial pose on startup
+
+    # Topic names
+    scan_topic: "scan"                    # Topic name for laser scans (adjust if different)
+    map_topic: "map"                      # Topic name for the map (default is /map)
