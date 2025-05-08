@@ -1,7 +1,7 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument, SetEnvironmentVariable, IncludeLaunchDescription
-from launch.substitutions import Command, LaunchConfiguration
+from launch.substitutions import Command, LaunchConfiguration, PathJoinSubstitution
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 import os
 from ament_index_python.packages import get_package_share_directory, get_package_prefix
@@ -12,6 +12,7 @@ def generate_launch_description():
     re4life_description_prefix = get_package_prefix("re4life_robot_description")
     gazebo_ros_dir = get_package_share_directory("gazebo_ros")
     turtlebot3_gazebo_dir = get_package_share_directory("turtlebot3_gazebo")
+    pkg_ros_gz_sim = get_package_share_directory('ros_gz_sim')
 
     model_arg = DeclareLaunchArgument(
         name="model",
@@ -46,17 +47,18 @@ def generate_launch_description():
         executable="spawn_entity.py",
         arguments=[
             "-entity", "relife",
-            "-topic", "robot_description",
-            "-x", "1.0",  # X position
-            "-y", "2.0",  # Y position
-            "-z", "0.0",  # Z position
-            "-R", "0.0",  # Roll
-            "-P", "0.0",  # Pitch
-            "-Y", "0.0",  # Yaw
-            '--ros-args', '--log-level', 'DEBUG'
+            "-topic", "/robot_description",  # ← add leading slash
+            "-x", "-2.0",
+            "-y", "0.0",
+            "-z", "0.0",
+            "-R", "0.0",
+            "-P", "0.0",
+            "-Y", "0.0",
+            "--ros-args", "--log-level", "debug"
         ],
         output="screen"
     )
+
 
     return LaunchDescription([
         env_variable,

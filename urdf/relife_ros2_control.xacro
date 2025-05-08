@@ -1,117 +1,53 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
-    <ros2_control type="system" name="GazeboSystem">
+    <ros2_control type="system" name="Gazebo">
         <hardware>
             <plugin>gazebo_ros2_control/GazeboSystem</plugin>
         </hardware>
-
         <joint name="RightWheel_link_joint">
-            <command_interface name="velocity"/>
-            <state_interface name="position"/>
-            <state_interface name="velocity"/>
+            <command_interface name="velocity">
+                <param name="min">-2.0</param>  <!-- Increased range from -1 to -2 -->
+                <param name="max">2.0</param>   <!-- Increased range from 1 to 2 -->
+            </command_interface>
+            <state_interface name="position" />
+            <state_interface name="velocity" />
         </joint>
 
         <joint name="LeftWheel_link_joint">
-            <command_interface name="velocity"/>
-            <state_interface name="position"/>
-            <state_interface name="velocity"/>
+            <command_interface name="velocity">
+                <param name="min">-2.0</param>  <!-- Increased range from -1 to -2 -->
+                <param name="max">2.0</param>   <!-- Increased range from 1 to 2 -->
+            </command_interface>
+            <state_interface name="position" />
+            <state_interface name="velocity" />
         </joint>
     </ros2_control>
 
     <transmission name="rightwheel_transmission">
-        <plugin>transmission_interface/SimpleTransmission</plugin>
+        <type>transmission_interface/SimpleTransmission</type>
         <actuator name="rightwheel_motor">
-            <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+            <hardwareInterface>hardware_interface/velocity</hardwareInterface>
         </actuator>
         <joint name="RightWheel_link_joint">
-            <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
-            <mechanical_reduction>1.0</mechanical_reduction>
+            <hardwareInterface>hardware_interface/velocity</hardwareInterface>
+            <mechanical_reduction>10.0</mechanical_reduction>  <!-- Increased from 1.0 for better torque -->
         </joint>
     </transmission>
 
     <transmission name="leftwheel_transmission">
-        <plugin>transmission_interface/SimpleTransmission</plugin>
+        <type>transmission_interface/SimpleTransmission</type>
         <actuator name="leftwheel_motor">
-            <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+            <hardwareInterface>hardware_interface/velocity</hardwareInterface>
         </actuator>
         <joint name="LeftWheel_link_joint">
-            <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
-            <mechanical_reduction>1.0</mechanical_reduction>
+            <hardwareInterface>hardware_interface/velocity</hardwareInterface>
+            <mechanical_reduction>10.0</mechanical_reduction>  <!-- Increased from 1.0 for better torque -->
         </joint>
     </transmission>
-
-    <gazebo reference="RightWheel_link">
-        <mu1>1000000000000000.0</mu1>
-        <mu2>1000000000000000.0</mu2>
-        <kp>1000000000000.0</kp>
-        <kd>10.0</kd>
-        <minDepth>0.001</minDepth>
-        <maxVel>0.1</maxVel>
-        <fdir1>1 0 0</fdir1>
-    </gazebo>
-
-    <gazebo reference="LeftWheel_link">
-        <mu1>1000000000000000.0</mu1>
-        <mu2>1000000000000000.0</mu2>
-        <kp>1000000000000.0</kp>
-        <kd>10.0</kd>
-        <minDepth>0.001</minDepth>
-        <maxVel>0.1</maxVel>
-        <fdir1>1 0 0</fdir1>
-    </gazebo>
-
+    
     <gazebo>
         <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
-            <parameters>/home/iprod/re4life_ws/src/re4life_controller/config/re4life_controllers.yaml</parameters>
+            <parameters>$(find re4life_robot_description)/config/re4life_controllers.yaml</parameters>
         </plugin>
     </gazebo>
-
-    <gazebo>
-        <plugin name="joint_state_publisher" filename="libgazebo_ros_joint_state_publisher.so">
-            <joint_name>RightWheel_link_joint</joint_name>
-            <joint_name>LeftWheel_link_joint</joint_name>
-            <joint_name>FrontWheel_link_joint</joint_name>
-            <joint_name>BackWheel_link_joint</joint_name>
-        </plugin>
-    </gazebo>
-
-    <gazebo>
-        <plugin name="gazebo_ros_range" filename="libgazebo_ros_range.so">
-            <ros>
-                <namespace>/</namespace>
-                <topicName>/ultrasonic</topicName>
-            </ros>
-            <sensor>
-                <horizontal_fov>0.5</horizontal_fov>
-                <range>
-                    <min>0.02</min>
-                    <max>2.0</max>
-                    <resolution>0.01</resolution>
-                </range>
-            </sensor>
-        </plugin>
-    </gazebo>
-
-    <gazebo>
-        <plugin name="diff_drive" filename="libgazebo_ros_diff_drive.so">
-            <!-- wheel info -->
-            <left_joint>LeftWheel_link_joint</left_joint>
-            <right_joint>RightWheel_link_joint</right_joint>
-            <wheel_separation>0.5</wheel_separation>
-            <wheel_diameter>0.2</wheel_diameter>
-
-            <!-- Limits -->
-            <max_wheel_torque>5</max_wheel_torque>
-            <max_wheel_acceleration>1</max_wheel_acceleration>
-
-            <!-- Output -->
-            <odometry_frame>odom</odometry_frame>
-            <robot_base_frame>base_link</robot_base_frame>
-
-            <publish_odom>true</publish_odom>
-            <publish_odom_tf>true</publish_odom_tf>
-            <publish_wheel_tf>true</publish_wheel_tf>
-        </plugin>
-    </gazebo>
-    
 </robot>

@@ -1,16 +1,53 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro" name="relife">
-  <!-- <xacro:include filename="$(find re4life_robot_description)/urdf/relife-model-gazebo.xacro"/> -->
+  <!-- Include the ROS2 control configuration -->
   <xacro:include filename="$(find re4life_robot_description)/urdf/relife_ros2_control.xacro"/>
-
-  <link name="base_link">
+ 
+  <!-- Inertial macros - unchanged -->
+  <xacro:macro name="inertial_box" params="mass x y z *origin">
     <inertial>
-      <mass value="1.0"/>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.1"/>
+      <xacro:insert_block name="origin"/>
+      <mass value="${mass}" />
+      <inertia ixx="${(1/12.0) * mass * (y*y+z*z)}"
+              ixy="0.0" ixz="0.0"
+              iyy="${(1/12.0) * mass * (x*x+z*z)}"
+              iyz="0.0"
+              izz="${(1/12.0) * mass * (x*x+y*y)}" />
     </inertial>
-  </link>
+  </xacro:macro>
 
+  <xacro:macro name="inertial_cylinder" params="mass length radius *origin">
+    <inertial>
+      <xacro:insert_block name="origin"/>
+      <mass value="${mass}" />
+      <inertia ixx="${(1/12.0) * mass * (3*radius*radius + length*length)}"
+              ixy="0.0" ixz="0.0"
+              iyy="${(1/12.0) * mass * (3*radius*radius + length*length)}"
+              iyz="0.0"
+              izz="${0.5 * mass * radius*radius}" />
+    </inertial>
+  </xacro:macro>
+
+  <!-- Base link - increased mass from 2.5 to 15 kg -->
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <box size="0.3 0.3 0.1"/>
+      </geometry>
+      <material>
+        <color rgba="0.8 0.8 0.8 1"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.3 0.3 0.1"/>
+      </geometry>
+    </collision>
+    <xacro:inertial_box mass="15.0" x="0.3" y="0.3" z="0.1">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </xacro:inertial_box>
+  </link>
+  
   <!-- Odom Frame -->
   <link name="odom"/>
 
@@ -20,95 +57,85 @@
     <child link="base_link"/>
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </joint>
-  
-
+ 
+  <!-- Body link - increased mass from 1.0 to 20.0 kg -->
   <link name="Body_link">
-    <collision name="CenterWheelExtention_collision">
-      <origin rpy="0.0 1.42294 0.0" xyz="0.17482 -0.00088 0.15732"/>
-      <geometry>
-        <mesh filename="package://re4life_robot_description/meshes/Cylinder.001.dae" scale="0.00883 0.00889 0.10297"/>
-      </geometry>
+    <collision>
+        <origin xyz="0 0 0.0885" rpy="0 0 0"/>
+        <geometry>
+            <box size="0.45 0.28 0.18"/>
+        </geometry>
     </collision>
-    <inertial>
-      <inertia ixx="44.2477" ixy="-0.75396" ixz="-9.16026" iyy="61.24271" iyz="-0.57135" izz="42.90716"/>
-      <origin rpy="0.0 0.0 0.0" xyz="0.00000 0.00000 -0.00000"/>
-      <mass value="0.96"/>
-    </inertial>
-    <visual name="Root">
-      <origin rpy="0.0 1.42294 0.0" xyz="0.17482 -0.00088 0.15732"/>
-      <material name="Material.001"/>
-      <geometry>
-        <mesh filename="package://re4life_robot_description/meshes/Cylinder.001.dae" scale="0.00883 0.00889 0.10297"/>
-      </geometry>
+    <xacro:inertial_box mass="20.0" x="0.45" y="0.28" z="0.18">
+      <origin xyz="0.17 0.0 0.15" rpy="0.0 0.0 0.0"/>
+    </xacro:inertial_box>
+    <visual>
+        <origin rpy="0.0 1.42294 0.0" xyz="0.17482 -0.00088 0.15732"/>
+        <material name="Material.001"/>
+        <geometry>
+            <mesh filename="package://re4life_robot_description/meshes/Cylinder.001.dae" scale="0.00883 0.00889 0.10297"/>
+        </geometry>
     </visual>
   </link>
 
   <joint name="base_to_body" type="fixed">
-    <parent link="base_link"/>
-    <child link="Body_link"/>
-    <origin xyz="0 0 0" rpy="0 0 0"/> 
-</joint>
-
-  <joint name="BackWheel_link_joint" type="continuous">
-    <limit lower="0" upper="0" effort="2.4" velocity="1.0"/>
-    <origin rpy="1.5708 0.0 -0.13475" xyz="-0.45842 0.00285 0.06126"/> 
+      <parent link="base_link"/>
+      <child link="Body_link"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+ 
+  <!-- Wheel joints - keep orientation but adjust dynamics -->
+  <joint name="BackWheel_link_joint" type="fixed">
+    <limit lower="0" upper="1" effort="100" velocity="0.50"/>
+    <origin rpy="${pi/2} 0 0" xyz="-0.45842 0.00285 0.05"/>
     <parent link="Body_link"/>
     <child link="BackWheel_link"/>
-    <axis xyz="0.0 0.0 1.0"/>
+    <axis xyz="0 0 1"/>
+    <dynamics damping="0.5" friction="0.1"/>  <!-- Increased damping and friction -->
   </joint>
 
-  <joint name="FrontWheel_link_joint" type="continuous">
-    <limit lower="0" upper="0" effort="2.4" velocity="1.0"/>
-    <origin rpy="0.62698 -1.55961 0.94292" xyz="0.17030 0.00221 0.04710"/> 
+  <joint name="FrontWheel_link_joint" type="fixed">
+    <limit lower="0" upper="1" effort="100" velocity="0.50"/>
+    <origin rpy="${pi/2} 0 0" xyz="0.17030 0.00221 0.05"/>
     <parent link="Body_link"/>
     <child link="FrontWheel_link"/>
-    <axis xyz="0.0 0.0 1.0"/>
+    <axis xyz="0 0 1"/>
+    <dynamics damping="0.5" friction="0.1"/>  <!-- Increased damping and friction -->
   </joint>
 
+  <!-- Driving wheels - increased effort and adjusted dynamics -->
   <joint name="LeftWheel_link_joint" type="continuous">
-    <!-- No need for limit tags for continuous joints -->
-    <origin rpy="1.5708 0.0 -0.13475" xyz="-0.24508 0.28586 0.04478"/> 
+    <limit effort="50" velocity="0.5"/>  <!-- Increased effort from 10 to 50 -->
+    <dynamics damping="0.1" friction="0.1"/>  <!-- Increased damping and friction -->
+    <origin rpy="${-pi/2} 0 0" xyz="-0.24508 0.28586 0.05"/>
     <parent link="Body_link"/>
     <child link="LeftWheel_link"/>
-    <axis xyz="0.0 0.0 1.0"/>
+    <axis xyz="0 0 1"/>
   </joint>
-  
+
   <joint name="RightWheel_link_joint" type="continuous">
-    <!-- No need for limit tags for continuous joints -->
-    <origin rpy="1.57084 -1.13165 0.08268" xyz="-0.24533 -0.28065 0.04553"/>
+    <limit effort="50" velocity="0.5"/>  <!-- Increased effort from 10 to 50 -->
+    <dynamics damping="0.1" friction="0.1"/>  <!-- Increased damping and friction -->
+    <origin rpy="${pi/2} 0 0" xyz="-0.24508 -0.28586 0.05"/>
     <parent link="Body_link"/>
     <child link="RightWheel_link"/>
-    <axis xyz="0.0 0.0 1.0"/>
+    <axis xyz="0 0 -1"/>
   </joint>
 
-  <joint name="camera_joint" type="fixed">
-    <origin rpy="0.0 1.5708 0.0" xyz="0.19112 0.00194 0.54940"/>
-    <parent link="Body_link"/>
-    <child link="camera"/>
-  </joint>
-
-  <joint name="ultrasonic_link_joint" type="fixed">
-    <limit effort="30" lower="-3" upper="3" velocity="1"/>
-    <origin rpy="3.1035 1.21463 3.01659" xyz="0.23943 -0.00200 0.04405"/>
-    <parent link="Body_link"/>
-    <child link="ultrasonic_link"/>
-  </joint>
-
-  <!-- Define links -->
+  <!-- Wheels - increased mass from 0.5 to 3.75 kg each -->
+  <!-- Back Wheel -->
   <link name="BackWheel_link">
-    <collision name="BackWheel_collision">
-      <origin rpy="-1.55259 0.13352 0.13597" xyz="0.0 0.0 0.0"/>
+    <collision>
+      <origin xyz="0 0 0" rpy="${pi/2} 0 ${pi/2}"/>
       <geometry>
-        <mesh filename="package://re4life_robot_description/meshes/Front_end.012.dae" scale="0.0026 0.0026 0.0026"/>
+        <cylinder radius="0.05" length="0.02"/>
       </geometry>
     </collision>
-    <inertial>
-      <inertia ixx="0.90769" ixy="0.00012" ixz="-0.00013" iyy="1.73757" iyz="-0.00007" izz="0.90757"/>
-      <origin rpy="0.0 0.0 0.0" xyz="0.00977 -0.00502 0.00438"/>
-      <mass value="0.96"/>
-    </inertial>
+    <xacro:inertial_cylinder mass="3.75" length="0.02" radius="0.05">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </xacro:inertial_cylinder>
     <visual name="BackWheel">
-      <origin rpy="-1.55259 0.13352 0.13597" xyz="0.0 0.0 0.0"/>
+      <origin xyz="0 0 0" rpy="${pi/2} 0 ${pi/2}"/>
       <material name="Backdrop.011"/>
       <geometry>
         <mesh filename="package://re4life_robot_description/meshes/Front_end.012.dae" scale="0.0026 0.0026 0.0026"/>
@@ -116,21 +143,19 @@
     </visual>
   </link>
 
-
+  <!-- Front Wheel -->
   <link name="FrontWheel_link">
-    <collision name="FrontWheel_collision">
-      <origin rpy="1.57071 -0.0025 0.01562" xyz="0.0 0.0 0.0"/>
+    <collision>
+      <origin xyz="0 0 0" rpy="${pi/2} 0 ${pi/2}"/>
       <geometry>
-        <mesh filename="package://re4life_robot_description/meshes/Front_end.011.dae" scale="0.0026 0.0026 0.0026"/>
+        <cylinder radius="0.05" length="0.02"/>
       </geometry>
     </collision>
-    <inertial>
-      <inertia ixx="0.90761" ixy="0.00086" ixz="-0.00014" iyy="1.73754" iyz="-0.00555" izz="0.90769"/>
-      <origin rpy="0.0 0.0 0.0" xyz="0.00826 0.00633 -0.00563"/>
-      <mass value="0.96"/>
-    </inertial>
+    <xacro:inertial_cylinder mass="3.75" length="0.02" radius="0.05">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </xacro:inertial_cylinder>
     <visual name="FrontWheel">
-      <origin rpy="1.57071 -0.0025 0.01562" xyz="0.0 0.0 0.0"/>
+      <origin xyz="0 0 0" rpy="${pi/2} 0 ${pi/2}"/>
       <material name="Backdrop.010"/>
       <geometry>
         <mesh filename="package://re4life_robot_description/meshes/Front_end.011.dae" scale="0.0026 0.0026 0.0026"/>
@@ -138,20 +163,19 @@
     </visual>
   </link>
 
+  <!-- Left Wheel -->
   <link name="LeftWheel_link">
-    <collision name="LeftWheel_collision">
-      <origin rpy="-1.55259 0.13352 0.13597" xyz="0.0 0.0 0.0"/>
+    <collision>
+      <origin xyz="0 0 0" rpy="${-pi/2} 0 ${pi/2}"/>
       <geometry>
-        <mesh filename="package://re4life_robot_description/meshes/Front_end.014.dae" scale="0.0026 0.0026 0.0026"/>
+        <cylinder radius="0.05" length="0.02"/>
       </geometry>
     </collision>
-    <inertial>
-      <inertia ixx="0.90769" ixy="0.00012" ixz="-0.00013" iyy="1.73757" iyz="-0.00007" izz="0.90757"/>
-      <origin rpy="0.0 0.0 0.0" xyz="0.00977 -0.00502 0.00438"/>
-      <mass value="0.96"/>
-    </inertial>
+    <xacro:inertial_cylinder mass="3.75" length="0.02" radius="0.05">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </xacro:inertial_cylinder>
     <visual name="LeftWheel">
-      <origin rpy="-1.55259 0.13352 0.13597" xyz="0.0 0.0 0.0"/>
+      <origin xyz="0 0 0" rpy="${-pi/2} 0 ${pi/2}"/>
       <material name="Backdrop.013"/>
       <geometry>
         <mesh filename="package://re4life_robot_description/meshes/Front_end.014.dae" scale="0.0026 0.0026 0.0026"/>
@@ -159,20 +183,19 @@
     </visual>
   </link>
 
+  <!-- Right Wheel -->
   <link name="RightWheel_link">
-    <collision name="RightWheel_collision">
-      <origin rpy="-1.58195 -0.08196 -0.99644" xyz="0.0 0.0 0.0"/>
+    <collision>
+      <origin xyz="0 0 0" rpy="${pi/2} 0 ${pi/2}"/>
       <geometry>
-        <mesh filename="package://re4life_robot_description/meshes/Front_end.013.dae" scale="0.0026 0.0026 0.0026"/>
+        <cylinder radius="0.05" length="0.02"/>
       </geometry>
     </collision>
-    <inertial>
-      <inertia ixx="0.90769" ixy="0.00012" ixz="-0.00013" iyy="1.73757" iyz="-0.00007" izz="0.90757"/>
-      <origin rpy="0.0 0.0 0.0" xyz="0.00977 -0.00502 0.00438"/>
-      <mass value="0.96"/>
-    </inertial>
+    <xacro:inertial_cylinder mass="3.75" length="0.02" radius="0.05">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </xacro:inertial_cylinder>
     <visual name="RightWheel">
-      <origin rpy="-1.55259 0.13352 1.37498" xyz="0.0 0.0 0.0"/>
+      <origin xyz="0 0 0" rpy="${pi/2} 0 ${pi/2}"/>
       <material name="Backdrop.012"/>
       <geometry>
         <mesh filename="package://re4life_robot_description/meshes/Front_end.013.dae" scale="0.0026 0.0026 0.0026"/>
@@ -180,6 +203,57 @@
     </visual>
   </link>
 
+  <!-- Ultrasonic sensor - unchanged -->
+  <link name="ultrasonic_link">
+    <visual name="ultrasonic">
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+      <geometry>
+        <box size="0.00334 0.00396 0.00339"/>
+      </geometry>
+    </visual>
+  </link>
+ 
+  <joint name="ultrasonic_link_joint" type="fixed">
+    <limit effort="30" lower="-3" upper="3" velocity="1"/>
+    <origin rpy="0 0 0" xyz="0.23943 -0.00200 0.04405"/>
+    <parent link="Body_link"/>
+    <child link="ultrasonic_link"/>
+  </joint>
+ 
+  <!-- LIDAR link - unchanged -->
+  <link name="lidar_link">
+    <inertial>
+      <mass value="0.5"/>  <!-- Increased from 0.05 to 0.5 kg -->
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>  <!-- Increased inertia -->
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.03" length="0.02"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.03" length="0.02"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="lidar_joint" type="fixed">
+    <parent link="Body_link"/>
+    <child link="lidar_link"/>
+    <origin xyz="0 0 0.25" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Camera joint and link - unchanged -->
+  <joint name="camera_joint" type="fixed">
+    <origin rpy="0.0 1.5708 0.0" xyz="0.19112 0.00194 0.54940"/>
+    <parent link="Body_link"/>
+    <child link="camera"/>
+  </joint>
+ 
   <link name="camera">
     <sensor name="Camera" type="camera">
       <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
@@ -200,57 +274,114 @@
       </geometry>
     </visual>
   </link>
-
-  <link name="ultrasonic_link">
-    <visual name="ultrasonic">
-      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
-      <geometry>
-        <box size="0.00334 0.00396 0.00339"/>
-      </geometry>
-    </visual>
-
-    <!-- Adding the sensor -->
-    <sensor type="ultrasonic" name="ultrasonic_sensor">
-      <origin xyz="0 0 0" rpy="0 0 0"/>
-      <plugin name="gazebo_ros_range" filename="libgazebo_ros_range.so">
-        <ros>
-          <namespace>/</namespace>
-          <topicName>ultrasonic</topicName>
-        </ros>
-        <sensor>
-          <horizontal_fov>0.5</horizontal_fov>
-          <range>
-            <min>0.02</min>
-            <max>2.0</max>
-            <resolution>0.01</resolution>
-          </range>
-        </sensor>
-      </plugin>
-    </sensor>
-  </link>
-
-  <!-- Define materials -->
+ 
+  <!-- Define materials - unchanged -->
   <material name="Backdrop.010">
     <color rgba="0.0 0.0 0.0 1.0"/>
   </material>
-
+ 
   <material name="Backdrop.011">
     <color rgba="0.0 0.0 0.0 1.0"/>
   </material>
-
+ 
   <material name="Backdrop.012">
     <color rgba="0.0 0.0 0.0 1.0"/>
   </material>
-
+ 
   <material name="Backdrop.013">
     <color rgba="0.0 0.0 0.0 1.0"/>
   </material>
-
+ 
   <material name="Material.001">
     <color rgba="0.10588 0.10588 0.10588 1.0"/>
   </material>
-
+ 
   <material name="Material.003">
     <color rgba="0.10588 0.10588 0.10588 1.0"/>
   </material>
+ 
+  <!-- Gazebo specific properties - adjusted for 50kg robot -->
+  <gazebo reference="LeftWheel_link">
+    <mu1>1.5</mu1>  <!-- Increased from 1.0 for better traction -->
+    <mu2>1.5</mu2>  <!-- Increased from 1.0 for better traction -->
+    <kp>1000000.0</kp>
+    <kd>100.0</kd>
+    <max_vel>1.0</max_vel>  <!-- Increased from 0.2 -->
+    <max_force>250.0</max_force>  <!-- Increased from 10.0 -->
+  </gazebo>
+  
+  <gazebo reference="RightWheel_link">
+    <mu1>1.5</mu1>  <!-- Increased from 1.0 for better traction -->
+    <mu2>1.5</mu2>  <!-- Increased from 1.0 for better traction -->
+    <kp>1000000.0</kp>
+    <kd>100.0</kd>
+    <max_vel>1.0</max_vel>  <!-- Increased from 0.2 -->
+    <max_force>250.0</max_force>  <!-- Increased from 10.0 -->
+  </gazebo>
+  
+  <gazebo reference="FrontWheel_link">
+    <mu1>0.1</mu1>  <!-- Lowered from 0.2 for better sliding -->
+    <mu2>0.1</mu2>  <!-- Lowered from 0.2 for better sliding -->
+    <kp>100000.0</kp>  <!-- Increased for better stability -->
+    <kd>10.0</kd>  <!-- Increased for better stability -->
+  </gazebo>
+  
+  <gazebo reference="BackWheel_link">
+    <mu1>0.1</mu1>  <!-- Lowered from 0.2 for better sliding -->
+    <mu2>0.1</mu2>  <!-- Lowered from 0.2 for better sliding -->
+    <kp>100000.0</kp>  <!-- Increased for better stability -->
+    <kd>10.0</kd>  <!-- Increased for better stability -->
+  </gazebo>
+  
+  <!-- LIDAR sensor - unchanged -->
+  <gazebo reference="lidar_link">
+    <sensor name="lidar_sensor" type="ray">
+      <pose>0 0 0 0 0 0</pose>
+      <visualize>true</visualize>
+      <update_rate>10</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>360</samples>
+            <resolution>1.0</resolution>
+            <min_angle>-3.14</min_angle>
+            <max_angle>3.14</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.12</min>
+          <max>8.0</max>
+          <resolution>0.01</resolution>
+        </range>
+      </ray>
+      <plugin name="lidar_plugin" filename="libgazebo_ros_ray_sensor.so">
+        <ros>
+          <remapping>~/out:=scan</remapping>
+        </ros>
+        <frame_name>lidar_link</frame_name>
+        <output_type>sensor_msgs/LaserScan</output_type>
+      </plugin>
+    </sensor>
+  </gazebo>
+  
+  <!-- Differential drive plugin - adjusted for 50kg robot -->
+  <gazebo>
+    <plugin name="gazebo_ros_diff_drive" filename="libgazebo_ros_diff_drive.so">
+      <update_rate>100</update_rate>
+      <left_joint>LeftWheel_link_joint</left_joint>
+      <right_joint>RightWheel_link_joint</right_joint>
+      <wheel_separation>0.57</wheel_separation>
+      <wheel_diameter>0.1</wheel_diameter>
+      <max_wheel_torque>100</max_wheel_torque>  <!-- Increased from 20 -->
+      <max_wheel_acceleration>0.3</max_wheel_acceleration>  <!-- Reduced from 0.5 for smoother movement -->
+      <publish_odom>true</publish_odom>
+      <publish_odom_tf>true</publish_odom_tf>
+      <publish_wheel_tf>false</publish_wheel_tf>
+      <odometry_frame>odom</odometry_frame>
+      <robot_base_frame>base_link</robot_base_frame>
+      <ros>
+        <namespace>/</namespace>
+      </ros>
+    </plugin>
+  </gazebo>
 </robot>

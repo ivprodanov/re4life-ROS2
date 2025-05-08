@@ -54,7 +54,7 @@ amcl:
     # Transformation tolerance and map usage
     tf_broadcast: true                    # Whether to broadcast the TF between map and odom
     transform_tolerance: 1.0              # Maximum allowable delay for transform data
-    use_map_topic: false                  # If true, subscribe to the /map topic instead of requesting the map via service
+    use_map_topic: true                  # If true, subscribe to the /map topic instead of requesting the map via service
     
     # Initial pose settings (optional)
     initial_pose:
@@ -67,5 +67,5 @@ amcl:
     always_reset_initial_pose: false      # If true, always reset to initial pose on startup
 
     # Topic names
-    scan_topic: "scan"                    # Topic name for laser scans (adjust if different)
-    map_topic: "map"                      # Topic name for the map (default is /map)
+    scan_topic: "/scan"                    # Topic name for laser scans (adjust if different)
+    map_topic: "/map"                      # Topic name for the map (default is /map)
