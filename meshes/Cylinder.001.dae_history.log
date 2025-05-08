@@ -1,3 +1,0 @@
-Instantiated with filepath=None->None, scale=[0.008826926350593567, 0.008891933597624302, 0.10296834260225296], mesh=<bpy_struct, Mesh("Cylinder.001") at 0x0000025C67973588>, meshname=Cylinder.001, material=None, mesh_orientation=None, {}
-->trying export of <bpy_struct, Mesh("Cylinder.001") at 0x0000025C67973588> to C:\Users\edi\Documents\urdf_rviz\relife\meshes\dae\Cylinder.001.dae
-->wrote dae to C:\Users\edi\Documents\urdf_rviz\relife\meshes\dae\Cylinder.001.dae from bpy_types.Mesh

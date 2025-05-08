@@ -1,3 +1,0 @@
-Instantiated with filepath=None->None, scale=[0.0025960858911275864, 0.0025960844941437244, 0.002596084726974368], mesh=<bpy_struct, Mesh("Front_end.011") at 0x0000025C67972B08>, meshname=Front_end.011, material=None, mesh_orientation=None, {}
-->trying export of <bpy_struct, Mesh("Front_end.011") at 0x0000025C67972B08> to C:\Users\edi\Documents\urdf_rviz\relife\meshes\dae\Front_end.011.dae
-->wrote dae to C:\Users\edi\Documents\urdf_rviz\relife\meshes\dae\Front_end.011.dae from bpy_types.Mesh
