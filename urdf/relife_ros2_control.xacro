@@ -11,6 +11,13 @@
             </command_interface>
             <state_interface name="position" />
             <state_interface name="velocity" />
+            <parameters>
+                <pid>
+                  <p>5.0</p>    <!-- proportional gain -->
+                  <i>0.1</i>    <!-- integral gain, often zero for velocity -->
+                  <d>0.01</d>   <!-- derivative gain -->
+                </pid>
+              </parameters>
         </joint>
 
         <joint name="LeftWheel_link_joint">
@@ -20,6 +27,13 @@
             </command_interface>
             <state_interface name="position" />
             <state_interface name="velocity" />
+            <parameters>
+                <pid>
+                  <p>5.0</p>    <!-- proportional gain -->
+                  <i>0.1</i>    <!-- integral gain, often zero for velocity -->
+                  <d>0.01</d>   <!-- derivative gain -->
+                </pid>
+              </parameters>
         </joint>
     </ros2_control>
 
@@ -30,10 +44,10 @@
         </actuator>
         <joint name="RightWheel_link_joint">
             <hardwareInterface>hardware_interface/velocity</hardwareInterface>
-            <mechanical_reduction>10.0</mechanical_reduction>  <!-- Increased from 1.0 for better torque -->
+            <mechanical_reduction>3.0</mechanical_reduction>  <!-- Further reduced from 5.0 -->
         </joint>
     </transmission>
-
+    
     <transmission name="leftwheel_transmission">
         <type>transmission_interface/SimpleTransmission</type>
         <actuator name="leftwheel_motor">
@@ -41,7 +55,7 @@
         </actuator>
         <joint name="LeftWheel_link_joint">
             <hardwareInterface>hardware_interface/velocity</hardwareInterface>
-            <mechanical_reduction>10.0</mechanical_reduction>  <!-- Increased from 1.0 for better torque -->
+            <mechanical_reduction>3.0</mechanical_reduction>  <!-- Further reduced from 5.0 -->
         </joint>
     </transmission>
     
