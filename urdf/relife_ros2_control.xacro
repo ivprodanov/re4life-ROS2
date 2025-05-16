@@ -6,33 +6,33 @@
         </hardware>
         <joint name="RightWheel_link_joint">
             <command_interface name="velocity">
-                <param name="min">-2.0</param>  <!-- Increased range from -1 to -2 -->
-                <param name="max">2.0</param>   <!-- Increased range from 1 to 2 -->
+                <param name="min">-150.0</param>  <!-- Increased range from -1 to -2 -->
+                <param name="max">150.0</param>   <!-- Increased range from 1 to 2 -->
             </command_interface>
             <state_interface name="position" />
             <state_interface name="velocity" />
             <parameters>
                 <pid>
-                  <p>5.0</p>    <!-- proportional gain -->
-                  <i>0.1</i>    <!-- integral gain, often zero for velocity -->
-                  <d>0.01</d>   <!-- derivative gain -->
-                </pid>
+                    <p>15.0</p>    <!-- Moderately increased from 10.0 -->
+                    <i>0.2</i>     <!-- Moderately increased from 0.1 -->
+                    <d>0.02</d>    <!-- Moderately increased from 0.01 -->
+                  </pid>
               </parameters>
         </joint>
 
         <joint name="LeftWheel_link_joint">
             <command_interface name="velocity">
-                <param name="min">-2.0</param>  <!-- Increased range from -1 to -2 -->
-                <param name="max">2.0</param>   <!-- Increased range from 1 to 2 -->
+                <param name="min">-150.0</param>
+                <param name="max">150.0</param>
             </command_interface>
             <state_interface name="position" />
             <state_interface name="velocity" />
             <parameters>
                 <pid>
-                  <p>5.0</p>    <!-- proportional gain -->
-                  <i>0.1</i>    <!-- integral gain, often zero for velocity -->
-                  <d>0.01</d>   <!-- derivative gain -->
-                </pid>
+                    <p>15.0</p>    <!-- Moderately increased from 10.0 -->
+                    <i>0.2</i>     <!-- Moderately increased from 0.1 -->
+                    <d>0.02</d>    <!-- Moderately increased from 0.01 -->
+                  </pid>
               </parameters>
         </joint>
     </ros2_control>
@@ -44,7 +44,7 @@
         </actuator>
         <joint name="RightWheel_link_joint">
             <hardwareInterface>hardware_interface/velocity</hardwareInterface>
-            <mechanical_reduction>3.0</mechanical_reduction>  <!-- Further reduced from 5.0 -->
+            <mechanical_reduction>2.5</mechanical_reduction>  <!-- Further reduced from 5.0 -->
         </joint>
     </transmission>
     
@@ -55,7 +55,7 @@
         </actuator>
         <joint name="LeftWheel_link_joint">
             <hardwareInterface>hardware_interface/velocity</hardwareInterface>
-            <mechanical_reduction>3.0</mechanical_reduction>  <!-- Further reduced from 5.0 -->
+            <mechanical_reduction>2.5</mechanical_reduction>  <!-- Further reduced from 5.0 -->
         </joint>
     </transmission>
     

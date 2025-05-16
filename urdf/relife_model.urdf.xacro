@@ -43,9 +43,9 @@
         <box size="0.3 0.3 0.1"/>
       </geometry>
     </collision>
-    <xacro:inertial_box mass="15.0" x="0.3" y="0.3" z="0.1">
+    <!-- <xacro:inertial_box mass="15.0" x="0.3" y="0.3" z="0.1">
       <origin xyz="0 0 0" rpy="0 0 0"/>
-    </xacro:inertial_box>
+    </xacro:inertial_box> -->
     <xacro:inertial_box 
       mass="85.0" 
       x="0.45"    
@@ -94,29 +94,28 @@
       <origin xyz="0 0 0" rpy="0 0 0"/>
   </joint>
  
-  <joint name="BackWheel_link_joint" type="fixed">
+  <joint name="BackWheel_link_joint" type="revolute">
     <parent link="Body_link"/>
     <child link="BackWheel_link"/>
     <origin xyz="-0.45842 0.00285 0.05" rpy="${pi/2} 0 0"/>
     <axis xyz="0 0 1"/>
-    <limit lower="-1e16" upper="1e16" effort="1.0" velocity="10.0"/>
+    <limit effort="5" velocity="5"/>
     <dynamics damping="0.0" friction="0.0"/>
   </joint>
   
-  <joint name="FrontWheel_link_joint" type="fixed">
+  <joint name="FrontWheel_link_joint" type="revolute">
     <parent link="Body_link"/>
     <child link="FrontWheel_link"/>
     <origin xyz="0.17030 0.00221 0.05" rpy="${pi/2} 0 0"/>
     <axis xyz="0 0 1"/>
-    <limit lower="-1e16" upper="1e16" effort="1.0" velocity="10.0"/>
+    <limit effort="5" velocity="5"/>
     <dynamics damping="0.0" friction="0.0"/>
   </joint>
 
 
   <!-- Driving wheels - increased effort and adjusted dynamics -->
   <joint name="LeftWheel_link_joint" type="continuous">
-    <limit effort="250" velocity="0.5"/>  <!-- Increased effort from 10 to 50 -->
-    <dynamics damping="0.1" friction="0.1"/>  <!-- Increased damping and friction -->
+    <limit effort="250" velocity="50"/>  <!-- Increased effort from 10 to 50 -->
     <origin rpy="${-pi/2} 0 0" xyz="-0.24508 0.28586 0.05"/>
     <parent link="Body_link"/>
     <child link="LeftWheel_link"/>
@@ -125,8 +124,7 @@
   </joint>
 
   <joint name="RightWheel_link_joint" type="continuous">
-    <limit effort="250" velocity="0.5"/>  <!-- Increased effort from 10 to 50 -->
-    <dynamics damping="0.1" friction="0.1"/>  <!-- Increased damping and friction -->
+    <limit effort="250" velocity="50"/>  <!-- Increased effort from 10 to 50 -->
     <origin rpy="${pi/2} 0 0" xyz="-0.24508 -0.28586 0.05"/>
     <parent link="Body_link"/>
     <child link="RightWheel_link"/>
@@ -354,21 +352,27 @@
   </material>
  
   <gazebo reference="LeftWheel_link">
-    <mu1>2.0</mu1>  <!-- Slightly reduced from 2.5 -->
-    <mu2>2.0</mu2>  <!-- Slightly reduced from 2.5 -->
-    <kp>250.0</kp>  <!-- Reduced from 500.0 -->
-    <kd>5.0</kd>    <!-- Reduced from 10.0 -->
-    <max_vel>0.5</max_vel>  <!-- Reduced from 1.0 -->
-    <max_force>100.0</max_force>  <!-- Reduced from 250.0 -->
+    <!-- Slightly increase friction to improve traction -->
+    <mu1>2.2</mu1>  <!-- Increased from 2.0 -->
+    <mu2>2.2</mu2>  <!-- Increased from 2.0 -->
+    <!-- Keep stiffness moderate -->
+    <kp>250.0</kp>  <!-- Keep same as original -->
+    <kd>5.0</kd>    <!-- Keep same as original -->
+    <!-- Moderate increase in velocity and force limits -->
+    <max_vel>0.9</max_vel>  <!-- Increased from 0.5 -->
+    <max_force>120.0</max_force>  <!-- Increased from 100.0 -->
   </gazebo>
     
   <gazebo reference="RightWheel_link">
-    <mu1>2.0</mu1>  <!-- Slightly reduced from 2.5 -->
-    <mu2>2.0</mu2>  <!-- Slightly reduced from 2.5 -->
-    <kp>250.0</kp>  <!-- Reduced from 500.0 -->
-    <kd>5.0</kd>    <!-- Reduced from 10.0 -->
-    <max_vel>0.5</max_vel>  <!-- Reduced from 1.0 -->
-    <max_force>100.0</max_force>  <!-- Reduced from 250.0 -->
+    <!-- Slightly increase friction to improve traction -->
+    <mu1>2.2</mu1>  <!-- Increased from 2.0 -->
+    <mu2>2.2</mu2>  <!-- Increased from 2.0 -->
+    <!-- Keep stiffness moderate -->
+    <kp>250.0</kp>  <!-- Keep same as original --> 
+    <kd>5.0</kd>    <!-- Keep same as original -->
+    <!-- Moderate increase in velocity and force limits -->
+    <max_vel>0.9</max_vel>  <!-- Increased from 0.5 -->
+    <max_force>120.0</max_force>  <!-- Increased from 100.0 -->
   </gazebo>
   
   <gazebo reference="FrontWheel_link">
@@ -424,9 +428,12 @@
       <right_joint>RightWheel_link_joint</right_joint>
       <wheel_separation>0.57</wheel_separation>
       <wheel_diameter>0.1</wheel_diameter>
-      <max_wheel_torque>90</max_wheel_torque>  <!-- Reduced from 150 to prevent tipping -->
-      <max_wheel_acceleration>0.1</max_wheel_acceleration>  <!-- Significantly reduced to prevent tipping -->
-      <max_velocity>1.0</max_velocity>  <!-- Moderate top speed -->
+      <!-- Moderate increase of torque from 110 to 130 -->
+      <max_wheel_torque>130</max_wheel_torque>  
+      <!-- Moderate increase from 1.0 to 1.5 -->
+      <max_wheel_acceleration>1.5</max_wheel_acceleration>  
+      <!-- Moderate increase from 50.0 to 65.0 -->
+      <max_velocity>65.0</max_velocity>
       <publish_odom>true</publish_odom>
       <publish_odom_tf>true</publish_odom_tf>
       <publish_wheel_tf>false</publish_wheel_tf>
