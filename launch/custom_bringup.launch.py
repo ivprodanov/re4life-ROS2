@@ -153,6 +153,15 @@ def generate_launch_description():
         }.items()
     )
 
+    cmd_vel_relay = Node(
+        package='topic_tools',
+        executable='relay',
+        name='cmd_vel_relay',
+        output='screen',
+        parameters=[{'use_sim_time': True}],
+        arguments=['/cmd_vel', '/diff_drive_controller/cmd_vel_unstamped']
+    )
+
     # Controller node for the robot
     ros2_control_node = Node(
         package="controller_manager",
@@ -195,72 +204,18 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
-        # First start the robot state publisher
         robot_state_publisher_node,
-        
-        # Then establish the TF tree with static transforms for wheel links
-        static_transform_publisher_base_to_left_wheel,
-        static_transform_publisher_base_to_right_wheel,
-        static_transform_publisher_base_to_front_wheel,
-        static_transform_publisher_base_to_back_wheel,
-        
-        # Start map server
         map_server_node,
-                
-        TimerAction(
-            period=0.0,  # Start immediately
-            actions=[bootstrap_map_to_odom]
-        ),
+        amcl_node,
+        lifecycle_manager,
+        cmd_vel_relay,
+        navigation,
 
-        # Start AMCL (localization)
-        TimerAction(
-            period=2.0,  # Short delay to ensure map server is ready
-            actions=[amcl_node]
-        ),
-        
-        # Start lifecycle manager
-        TimerAction(
-            period=3.0,
-            actions=[lifecycle_manager]
-        ),
-        
-        # Start navigation stack
-        TimerAction(
-            period=5.0,  # Allow localization to initialize
-            actions=[navigation]
-        ),
-        
-        # TimerAction(
-        #     period=7.0,
-        #     actions=[ros2_control_node]
-        # ),
+        # ---> ADD THE CONTROLLER MANAGER NODE HERE <---
+        ros2_control_node,
 
-        TimerAction(
-            period=8.0,
-            actions=[
-                Node(
-                    package='controller_manager',
-                    executable='spawner',
-                    arguments=['joint_state_broadcaster', '--controller-manager', '/controller_manager'],
-                    output='screen'
-                ),
-                # Node(
-                #     package='controller_manager',
-                #     executable='spawner',
-                #     arguments=['diff_drive_controller', '--controller-manager', '/controller_manager'],
-                #     output='screen'
-                # )
-            ]
-        )
-
-
-        # TimerAction(
-        #     period=15.0,
-        #     actions=[
-        #         ExecuteProcess(
-        #             cmd=['ros2', 'node', 'kill', '/bootstrap_map_to_odom'],
-        #             output='screen'
-        #         )
-        #     ]
-        # )
+        # Spawn the controllers after the controller manager is active
+        # No need for timers, the spawner will wait for the service
+        joint_state_spawner,
+        diff_drive_spawner,
     ])

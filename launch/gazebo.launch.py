@@ -25,7 +25,10 @@ def generate_launch_description():
 
     env_variable = SetEnvironmentVariable("GAZEBO_MODEL_PATH", model_path)
 
-    robot_description = Command(["xacro ", LaunchConfiguration("model")])
+    # robot_description = Command(["xacro ", LaunchConfiguration("model")])
+    robot_description = Command(["xacro ", PathJoinSubstitution([
+        re4life_description, "urdf", "relife_model.urdf.xacro"
+    ])])
 
     robot_state_publisher_node = Node(
         package="robot_state_publisher",
@@ -35,7 +38,8 @@ def generate_launch_description():
 
     start_gazebo_server = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(gazebo_ros_dir, 'launch', 'gzserver.launch.py')),
-        launch_arguments={'world': os.path.join(turtlebot3_gazebo_dir, 'worlds', 'turtlebot3_world.world')}.items()
+        # launch_arguments={'world': os.path.join(turtlebot3_gazebo_dir, 'worlds', 'turtlebot3_world.world')}.items()
+        launch_arguments={'world': os.path.join(re4life_description, 'worlds', 'arena.world')}.items()
     )
     
     start_gazebo_client = IncludeLaunchDescription(
@@ -50,7 +54,7 @@ def generate_launch_description():
             "-topic", "/robot_description",  # ← add leading slash
             "-x", "-2.0",
             "-y", "0.0",
-            "-z", "0.0",
+            "-z", "0.3",
             "-R", "0.0",
             "-P", "0.0",
             "-Y", "0.0",
@@ -65,6 +69,6 @@ def generate_launch_description():
         model_arg,
         start_gazebo_server,
         start_gazebo_client,
-        robot_state_publisher_node,
+        # robot_state_publisher_node,
         spawn_robot
     ])

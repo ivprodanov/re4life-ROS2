@@ -6,20 +6,19 @@
         </hardware>
         <joint name="RightWheel_link_joint">
             <command_interface name="velocity">
-                <param name="min">-150.0</param>  <!-- Increased range from -1 to -2 -->
-                <param name="max">150.0</param>   <!-- Increased range from 1 to 2 -->
+                <param name="min">-150.0</param>
+                <param name="max">150.0</param>
             </command_interface>
             <state_interface name="position" />
             <state_interface name="velocity" />
             <parameters>
                 <pid>
-                    <p>15.0</p>    <!-- Moderately increased from 10.0 -->
-                    <i>0.2</i>     <!-- Moderately increased from 0.1 -->
-                    <d>0.02</d>    <!-- Moderately increased from 0.01 -->
-                  </pid>
-              </parameters>
+                    <p>100.0</p>
+                    <i>0.2</i>
+                    <d>0.02</d>
+                </pid>
+            </parameters>
         </joint>
-
         <joint name="LeftWheel_link_joint">
             <command_interface name="velocity">
                 <param name="min">-150.0</param>
@@ -29,36 +28,14 @@
             <state_interface name="velocity" />
             <parameters>
                 <pid>
-                    <p>15.0</p>    <!-- Moderately increased from 10.0 -->
-                    <i>0.2</i>     <!-- Moderately increased from 0.1 -->
-                    <d>0.02</d>    <!-- Moderately increased from 0.01 -->
-                  </pid>
-              </parameters>
+                    <p>100.0</p>
+                    <i>0.2</i>
+                    <d>0.02</d>
+                </pid>
+            </parameters>
         </joint>
     </ros2_control>
 
-    <transmission name="rightwheel_transmission">
-        <type>transmission_interface/SimpleTransmission</type>
-        <actuator name="rightwheel_motor">
-            <hardwareInterface>hardware_interface/velocity</hardwareInterface>
-        </actuator>
-        <joint name="RightWheel_link_joint">
-            <hardwareInterface>hardware_interface/velocity</hardwareInterface>
-            <mechanical_reduction>2.5</mechanical_reduction>  <!-- Further reduced from 5.0 -->
-        </joint>
-    </transmission>
-    
-    <transmission name="leftwheel_transmission">
-        <type>transmission_interface/SimpleTransmission</type>
-        <actuator name="leftwheel_motor">
-            <hardwareInterface>hardware_interface/velocity</hardwareInterface>
-        </actuator>
-        <joint name="LeftWheel_link_joint">
-            <hardwareInterface>hardware_interface/velocity</hardwareInterface>
-            <mechanical_reduction>2.5</mechanical_reduction>  <!-- Further reduced from 5.0 -->
-        </joint>
-    </transmission>
-    
     <gazebo>
         <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
             <parameters>$(find re4life_robot_description)/config/re4life_controllers.yaml</parameters>
