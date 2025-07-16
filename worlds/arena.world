@@ -10,9 +10,7 @@
         <iters>100</iters>
       </solver>
     </physics>
-    <plugin name="physics" filename="libgz_sim-physics-system.so"/>
-    <plugin name="user_commands" filename="libgz_sim-user-commands-system.so"/>
-    <plugin name="scene_broadcaster" filename="libgz_sim-scene-broadcaster-system.so"/>
+
     <light type="directional" name="sun">
       <cast_shadows>true</cast_shadows>
       <pose>0 0 10 0 0 0</pose>

@@ -69,6 +69,6 @@ def generate_launch_description():
         model_arg,
         start_gazebo_server,
         start_gazebo_client,
-        # robot_state_publisher_node,
+        robot_state_publisher_node,
         spawn_robot
     ])
